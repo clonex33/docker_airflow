@@ -1,0 +1,12 @@
+#restart
+docker compose down
+
+#run docker compose
+docker compose up -d
+
+#connect database
+docker exec -it b3262e62ebdd psql -U airflow -d airflow
+
+SELECT * FROM web_logs_cleans;
+
+
