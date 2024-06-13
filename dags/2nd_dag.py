@@ -30,7 +30,7 @@ with DAG(
         tags=['data-processing']
 ) as dag:
     # Define the function to process the CSV file
-    def process_csv_file(dag_id, schema_name):
+    def process_csv_file(run_id, dag_id, schema_name):
         try:
             # Construct the input file path using CUR_DIR
             input_filepath = os.path.join(CUR_DIR, 'data_set', 'Website_Logs.csv')
@@ -44,14 +44,19 @@ with DAG(
             # Add a new column for the DAG ID
             listings['dag_id'] = dag_id
 
+            # Add a new column for the run ID
+            listings['run_id'] = run_id
+
             # Convert 'accessed_date' column to datetime
             listings['accessed_date'] = pd.to_datetime(listings['accessed_date'], errors='coerce')
 
             # Convert specified columns to integer type
-            listings['duration_(secs)'] = pd.to_numeric(listings['duration_(secs)'], errors='coerce').fillna(0).astype(int)
+            listings['duration_(secs)'] = pd.to_numeric(listings['duration_(secs)'], errors='coerce').fillna(0).astype(
+                int)
             listings['age'] = pd.to_numeric(listings['age'], errors='coerce').fillna(0).astype(int)
             listings['sales'] = pd.to_numeric(listings['sales'], errors='coerce').fillna(0).astype(int)
-            listings['returned_amount'] = pd.to_numeric(listings['returned_amount'], errors='coerce').fillna(0).astype(int)
+            listings['returned_amount'] = pd.to_numeric(listings['returned_amount'], errors='coerce').fillna(0).astype(
+                int)
 
             # Database connection details
             db_url = 'postgresql+psycopg2://airflow:airflow@postgres/airflow'
@@ -73,11 +78,12 @@ with DAG(
             logger.error(f"Unexpected error: {e}")
             raise AirflowException("An unexpected error occurred during processing")
 
+
     # Define the PythonOperator task
     process_csv_task = PythonOperator(
         task_id='process_csv_file',
         python_callable=process_csv_file,
-        op_args=[dag.dag_id, 'myeg'],
+        op_kwargs={'run_id': '{{ run_id }}', 'dag_id': dag.dag_id, 'schema_name': 'myeg'},
     )
 
     # Add the task to the DAG
