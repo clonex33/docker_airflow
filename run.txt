@@ -5,8 +5,8 @@ docker compose down
 docker compose up -d
 
 #connect database
-docker exec -it b3262e62ebdd psql -U airflow -d airflow
+docker exec -it 28a450e284e1 psql -U airflow -d airflow
 
-SELECT * FROM web_logs_cleans;
+SELECT * FROM myeg.web_logs_cleans;
 
 
